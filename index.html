@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpro Union</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --alpro-blue: #193b78;
+            --alpro-orange: #f05a28;
+            --alpro-light-blue: #2563eb;
+            --alpro-gradient: linear-gradient(135deg, #193b78 0%, #2563eb 100%);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding-top: 80px;
+        }
+        /* ...[CSS sama seperti yang kamu punya, tidak berubah, copy-paste dari atas sampai akhir, biar styling tetap utuh]... */
+        /* Paste semua CSS di atas tanpa perubahan di sini */
+        /* ... */
+    </style>
+</head>
+<body>
+    <!-- [HTML Structure sama seperti di atas, copy-paste semua bagian body tanpa diubah] -->
+    <!-- ... -->
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget">
+        <button class="chatbot-toggle" id="chatbotToggle">
+            <img src="https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ.jpg" id="chatbotIcon">
+            <div class="chatbot-notification" id="chatbotNotification">1</div>
+        </button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <div class="chatbot-avatar">
+                    <img src="https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ_nobc.png" id="chatbotIcon">
+                </div>
+                <div class="chatbot-info">
+                    <div class="chatbot-title">OICS HELPDESK</div>
+                    <div class="chatbot-status">
+                        <div class="status-dot"></div>
+                        Online
+                    </div>
+                </div>
+                <button class="chatbot-minimize" id="chatbotMinimize">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+            <div class="chatbot-body" id="chatbotBody">
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <img src="https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ_nobc.png" id="chatbotIcon">
+                    </div>
+                    <h3 style="margin-bottom: 8px; color: var(--alpro-blue); font-weight: 600;">Selamat datang di OICS HELPDESK</h3>
+                    <p style="margin-bottom: 16px;">Saya adalah chatbot yang membantu menangani keluhan operasional anda terkait IT.</p>
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 12px; border-radius: 12px; margin-top: 16px;"></div>
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <div class="input-group">
+                    <textarea class="message-input" id="messageInput" placeholder="Ketik pertanyaan Anda disini..." rows="1"></textarea>
+                    <button class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- SCRIPTS -->
+    <script>
+        // Navbar & Mobile menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.querySelector('.navbar');
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) navbar.classList.add('scrolled');
+                else navbar.classList.remove('scrolled');
+            });
+            mobileMenuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                mobileMenuToggle.classList.toggle('active');
+                mobileMenu.classList.toggle('active');
+            });
+            document.addEventListener('click', function(e) {
+                if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('active');
+                }
+            });
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('active');
+                });
+            });
+        });
+        // Smooth scroll for anchor
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        // Menu card animasi muncul
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.menu-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+        // Chatbot Functionality
+        class AlproChatbot {
+            constructor() {
+                this.scriptURL = "https://script.google.com/macros/s/AKfycbyh_WAvPQU3sSV8dKTx5JBvmX8k8qj-WALlwi3lwy0n3vghbOxWAmrQRQvyF99ul8_NIw/exec";
+                this.isOpen = false;
+                this.isFirstVisit = true;
+                this.messageCount = 0;
+                this.initializeElements();
+                this.bindEvents();
+                this.showInitialNotification();
+            }
+            initializeElements() {
+                this.toggle = document.getElementById('chatbotToggle');
+                this.window = document.getElementById('chatbotWindow');
+                this.minimize = document.getElementById('chatbotMinimize');
+                this.body = document.getElementById('chatbotBody');
+                this.input = document.getElementById('messageInput');
+                this.sendBtn = document.getElementById('sendButton');
+                this.notification = document.getElementById('chatbotNotification');
+                this.icon = document.getElementById('chatbotIcon');
+            }
+            bindEvents() {
+                this.toggle.addEventListener('click', () => this.toggleChat());
+                this.minimize.addEventListener('click', () => this.closeChat());
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                this.input.addEventListener('input', () => this.adjustTextareaHeight());
+            }
+            showInitialNotification() {
+                setTimeout(() => {
+                    if (!this.isOpen && this.isFirstVisit) {
+                        this.notification.style.display = 'flex';
+                        this.notification.textContent = '1';
+                    }
+                }, 3000);
+            }
+            toggleChat() {
+                if (this.isOpen) {
+                    this.closeChat();
+                } else {
+                    this.openChat();
+                }
+            }
+            openChat() {
+                this.isOpen = true;
+                this.isFirstVisit = false;
+                this.window.classList.add('active');
+                this.notification.style.display = 'none';
+                this.icon.className = 'fas fa-times';
+                this.input.focus();
+                if (this.messageCount === 0) {
+                    setTimeout(() => {
+                        this.addBotMessage("Halo! Saya OICS HELPDESK. Ada yang bisa saya bantu hari ini? 😊");
+                    }, 500);
+                }
+            }
+            closeChat() {
+                this.isOpen = false;
+                this.window.classList.remove('active');
+                this.icon.className = '<img src=\"https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ.jpg\" id=\"chatbotIcon\">';
+            }
+            adjustTextareaHeight() {
+                this.input.style.height = 'auto';
+                this.input.style.height = Math.min(this.input.scrollHeight, 100) + 'px';
+            }
+            async sendMessage() {
+                const message = this.input.value.trim();
+                if (!message) return;
+                this.addUserMessage(message);
+                this.input.value = '';
+                this.adjustTextareaHeight();
+                this.sendBtn.disabled = true;
+                this.showTypingIndicator();
+                try {
+                    const response = await fetch(`${this.scriptURL}?q=${encodeURIComponent(message)}`, { method: "POST" });
+                    const answer = await response.text();
+                    this.hideTypingIndicator();
+                    this.addBotMessage(answer);
+                } catch (error) {
+                    this.hideTypingIndicator();
+                    this.addBotMessage("Maaf, terjadi kesalahan sistem. Silakan coba lagi dalam beberapa saat atau hubungi tim support kami. 🙏");
+                } finally {
+                    this.sendBtn.disabled = false;
+                }
+            }
+            addUserMessage(message) {
+                const messageDiv = this.createMessageElement('user', message);
+                this.body.appendChild(messageDiv);
+                this.scrollToBottom();
+                this.messageCount++;
+                if (this.body.querySelector('.welcome-message')) {
+                    this.body.querySelector('.welcome-message').remove();
+                }
+            }
+            addBotMessage(message) {
+                const messageDiv = this.createMessageElement('bot', message);
+                this.body.appendChild(messageDiv);
+                this.scrollToBottom();
+                this.messageCount++;
+            }
+            formatBotMessage(content) {
+                let formatted = content;
+                // 1. Split paragraphs
+                const paragraphs = formatted.split('\n\n').filter(p => p.trim());
+                if (paragraphs.length <= 1) {
+                    const sentences = formatted.split('. ').filter(s => s.trim());
+                    if (sentences.length > 3) {
+                        const midPoint = Math.ceil(sentences.length / 2);
+                        formatted = sentences.slice(0, midPoint).join('. ') + '.\n\n' +
+                                   sentences.slice(midPoint).join('. ') + '.';
+                    }
+                }
+                formatted = formatted.replace(/(\d+\.\s)/g, '\n$1');
+                formatted = formatted.replace(/(-\s|•\s)/g, '\n$1');
+                formatted = formatted.replace(/(WhatsApp|Email|Telepon|Kontak):\s*([^\n]+)/gi,
+                    '<div class="contact-info"><strong>$1:</strong> $2</div>');
+                formatted = formatted.replace(/(Penting|Catatan|Perhatian|Warning):\s*([^\n]+)/gi,
+                    '<div class="warning"><strong>$1:</strong> $2</div>');
+                formatted = formatted.replace(/\n/g, '<br>');
+                formatted = formatted.replace(/<br><br>/g, '</p><p>');
+                if (!formatted.includes('<p>') && !formatted.includes('<div>')) {
+                    formatted = `<p>${formatted}</p>`;
+                }
+                return formatted;
+            }
+            createMessageElement(type, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `chatbot-message ${type}-message`;
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.innerHTML = type === 'user' ? '<i class="fas fa-user"></i>' : '<img src="https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ_nobc.png" id="chatbotIcon">';
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                if (type === 'bot') {
+                    messageContent.innerHTML = this.formatBotMessage(content);
+                } else {
+                    messageContent.textContent = content;
+                }
+                const time = document.createElement('div');
+                time.className = 'message-time';
+                time.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                messageDiv.appendChild(avatar);
+                const contentWrapper = document.createElement('div');
+                contentWrapper.appendChild(messageContent);
+                contentWrapper.appendChild(time);
+                messageDiv.appendChild(contentWrapper);
+                return messageDiv;
+            }
+            showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'chatbot-message bot-message typing-message';
+                typingDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <img src="https://cdn.jsdelivr.net/gh/ginting719/Audio/JJ_nobc.png" id="chatbotIcon">
+                    </div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                `;
+                this.body.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+            hideTypingIndicator() {
+                const typingMessage = this.body.querySelector('.typing-message');
+                if (typingMessage) {
+                    typingMessage.remove();
+                }
+            }
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.body.scrollTop = this.body.scrollHeight;
+                }, 100);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            new AlproChatbot();
+        });
+    </script>
+</body>
+</html>
